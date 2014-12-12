@@ -1,0 +1,12 @@
+config ARCH_MT6582
+        bool "MediaTek MT6582"
+        select GENERIC_TIME
+        select GENERIC_CLOCKEVENTS
+        select ARCH_HAS_CPUFREQ
+        select ARM_AMBA
+        select CPU_V7
+        select HAVE_SMP
+        select NEED_MACH_MEMORY_H
+        select ARM_GIC
+        help
+          This enable support for MediaTek MT6582.

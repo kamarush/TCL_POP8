@@ -1,0 +1,18 @@
+
+
+#ifndef __CUSTOM_MEMORYDEVICE__
+#define __CUSTOM_MEMORYDEVICE__
+
+
+
+//#define BOARD_ID                MT8382_EVB_P2
+#define BOARD_ID                MT6582_EVB
+
+//#define CS_PART_NUMBER[0]       COMMON_DDR3_1024MB
+#define CS_PART_NUMBER[0]       MT29PZZZ8D4WKFEW_18W_6D4
+#define CS_PART_NUMBER[1]       KMK7X000VM_B314
+#define CS_PART_NUMBER[2]       KMK5X000VM_B314
+#define CS_PART_NUMBER[3]       TYD0GH231624RC
+#define CS_PART_NUMBER[4]       KMK8X000VM_B412
+
+#endif /* __CUSTOM_MEMORYDEVICE__ */

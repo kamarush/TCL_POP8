@@ -1,0 +1,23 @@
+menuconfig MEDIATEK_SOLUTION
+        bool "MediaTek Properitary Configuration"
+        help
+            Check this to enable MediaTek properity configuration.
+
+if MEDIATEK_SOLUTION
+
+config ARCH_MTK_PLATFORM
+  string
+  option env="ARCH_MTK_PLATFORM"
+
+choice 
+    bool "System Type"
+
+source "../mediatek/platform/$ARCH_MTK_PLATFORM/kernel/Kconfig/Platform"
+
+endchoice
+
+source "../mediatek/platform/$ARCH_MTK_PLATFORM/kernel/Kconfig/Kernel"
+source "../mediatek/platform/$ARCH_MTK_PLATFORM/kernel/Kconfig/Board"
+source "../mediatek/platform/$ARCH_MTK_PLATFORM/kernel/Kconfig/Drivers"
+
+endif

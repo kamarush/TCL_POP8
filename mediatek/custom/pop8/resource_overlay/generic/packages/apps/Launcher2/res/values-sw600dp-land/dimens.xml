@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2009 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<resources>
+    <dimen name="app_icon_padding_top">0dp</dimen><!--0 to 10. For music and weather widget layout. JRD Dong Jianfei in 2013-10-29.-->
+    <dimen name="app_icon_drawable_padding_land">0dp</dimen>
+    <dimen name="workspace_icon_text_size">11sp</dimen>
+
+<!-- Hotseat -->
+    <dimen name="button_bar_width_left_padding">14dp</dimen><!--14 to 4. For music and weather widget layout. JRD Dong Jianfei in 2013-10-29.-->
+    <dimen name="button_bar_width_right_padding">14dp</dimen>
+    <!-- For 5 cells Hotseat. Add by JRD Dong Jianfei in 2013-10-24. -->
+    <dimen name="button_bar_height_bottom_padding">27dp</dimen>
+    <dimen name="hotseat_cell_width">100dp</dimen>
+    <dimen name="hotseat_cell_height">64dp</dimen><!--64 to 74. For music and weather widget layout. JRD Dong Jianfei in 2013-10-29.-->
+    <dimen name="hotseat_width_gap">30dp</dimen>
+    <dimen name="hotseat_height_gap">34dp</dimen><!--34 to 24. For music and weather widget layout. JRD Dong Jianfei in 2013-10-29.-->
+    <!-- End by djf in 2013-10-24. -->
+
+<!-- AppsCustomize -->
+    <dimen name="apps_customize_cell_width">122dp</dimen> 
+    <dimen name="apps_customize_cell_height">96dp</dimen>
+    <dimen name="apps_customize_pageLayoutPaddingLeft">0dp</dimen>
+    <dimen name="apps_customize_pageLayoutPaddingRight">0dp</dimen>
+    <dimen name="apps_customize_pageLayoutWidthGap">12dp</dimen>
+    <dimen name="apps_customize_pageLayoutHeightGap">8dp</dimen>
+    <dimen name="apps_customize_pageLayoutPaddingTop">20dp</dimen>
+    <dimen name="apps_customize_pageLayoutPaddingBottom">14dp</dimen>
+
+<!-- QSB -->
+    <dimen name="qsb_bar_height">82dp</dimen>
+    <dimen name="toolbar_button_vertical_padding">12dip</dimen>
+    <dimen name="toolbar_button_horizontal_padding">20dip</dimen>
+
+<!-- Workspace -->
+    <dimen name="workspace_divider_padding_top">12dp</dimen>
+    <dimen name="workspace_divider_padding_bottom">12dp</dimen>
+    <dimen name="workspace_divider_padding_left">0dp</dimen>
+    <dimen name="workspace_divider_padding_right">0dp</dimen>
+    
+    <!-- legends modify for PR:603916 Workspace cell size -->
+    <dimen name="workspace_cell_width_land">122dp</dimen>
+    <dimen name="workspace_cell_width_port">96dp</dimen>
+    <dimen name="workspace_cell_height_land">88dp</dimen>
+    <dimen name="workspace_cell_height_port">116dp</dimen>
+    <dimen name="workspace_width_gap_land">4dp</dimen> 
+    <dimen name="workspace_width_gap_port">0dp</dimen> 
+    <dimen name="workspace_height_gap_land">0dp</dimen>
+    <dimen name="workspace_height_gap_port">0dp</dimen>
+    
+    <dimen name="folder_item_preview_padding">1dp</dimen>
+    <dimen name="folder_item_preview_padding_top">-3dp</dimen>
+    <dimen name="folder_item_preview_padding_top_hotseat">9dp</dimen>
+    
+</resources>
