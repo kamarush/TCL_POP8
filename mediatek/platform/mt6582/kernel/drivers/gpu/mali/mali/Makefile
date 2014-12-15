@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2010-2013 ARM Limited. All rights reserved.
+# Copyright (C) 2010-2014 ARM Limited. All rights reserved.
 # 
 # This program is free software and is provided to you under the terms of the GNU General Public License version 2
 # as published by the Free Software Foundation, and any use by you of this program is subject to the terms of such GNU licence.
@@ -11,7 +11,11 @@
 USE_UMPV2=0
 USING_PROFILING ?= 1
 USING_INTERNAL_PROFILING ?= 0
+USING_DVFS ?= 1
+MALI_HEATMAPS_ENABLED ?= 0
 MALI_DMA_BUF_MAP_ON_ATTACH ?= 1
+MALI_PMU_PARALLEL_POWER_UP ?= 0
+USING_DT ?= 0
 
 # The Makefile sets up "arch" based on the CONFIG, creates the version info
 # string and the __malidrv_build_info.c file, and then call the Linux build
@@ -60,6 +64,11 @@ ifeq ($(KDIR),)
 $(error No KDIR found for platform $(TARGET_PLATFORM))
 endif
 
+ifeq ($(USING_GPU_UTILIZATION), 1)
+    ifeq ($(USING_DVFS), 1)
+        $(error USING_GPU_UTILIZATION conflict with USING_DVFS you can read the Integration Guide to choose which one do you need)
+    endif
+endif
 
 ifeq ($(USING_UMP),1)
 export CONFIG_MALI400_UMP=y
@@ -92,6 +101,10 @@ endif
 
 # Set up build config
 export CONFIG_MALI400=m
+export CONFIG_MALI450=y
+
+export EXTRA_DEFINES += -DCONFIG_MALI400=1
+export EXTRA_DEFINES += -DCONFIG_MALI450=1
 
 ifneq ($(MALI_PLATFORM),)
 export EXTRA_DEFINES += -DMALI_FAKE_PLATFORM_DEVICE=1
@@ -100,7 +113,7 @@ endif
 
 ifeq ($(USING_PROFILING),1)
 ifeq ($(CONFIG_TRACEPOINTS),)
-$(warning CONFIG_TRACEPOINTS reqired for profiling)
+$(warning CONFIG_TRACEPOINTS required for profiling)
 else
 export CONFIG_MALI400_PROFILING=y
 export EXTRA_DEFINES += -DCONFIG_MALI400_PROFILING=1
@@ -108,16 +121,53 @@ ifeq ($(USING_INTERNAL_PROFILING),1)
 export CONFIG_MALI400_INTERNAL_PROFILING=y
 export EXTRA_DEFINES += -DCONFIG_MALI400_INTERNAL_PROFILING=1
 endif
+ifeq ($(MALI_HEATMAPS_ENABLED),1)
+export MALI_HEATMAPS_ENABLED=y
+export EXTRA_DEFINES += -DCONFIG_MALI400_HEATMAPS_ENABLED
+endif
 endif
 endif
 
 ifeq ($(MALI_DMA_BUF_MAP_ON_ATTACH),1)
-export CONFIG_MALI_DMA_BUF_MAP_ON_ATTACH=1
+export CONFIG_MALI_DMA_BUF_MAP_ON_ATTACH=y
 export EXTRA_DEFINES += -DCONFIG_MALI_DMA_BUF_MAP_ON_ATTACH
 endif
 
+ifeq ($(MALI_SHARED_INTERRUPTS),1)
+export CONFIG_MALI_SHARED_INTERRUPTS=y
+export EXTRA_DEFINES += -DCONFIG_MALI_SHARED_INTERRUPTS
+endif
+
+ifeq ($(USING_DVFS),1)
+export CONFIG_MALI_DVFS=y
+export EXTRA_DEFINES += -DCONFIG_MALI_DVFS
+endif
+
+ifeq ($(MALI_PMU_PARALLEL_POWER_UP),1)
+export CONFIG_MALI_PMU_PARALLEL_POWER_UP=y
+export EXTRA_DEFINES += -DCONFIG_MALI_PMU_PARALLEL_POWER_UP
+endif
+
+ifdef CONFIG_OF
+ifeq ($(USING_DT),1)
+export CONFIG_MALI_DT=y
+export EXTRA_DEFINES += -DCONFIG_MALI_DT
+endif
+endif
+
 ifneq ($(BUILD),release)
+# Debug
 export CONFIG_MALI400_DEBUG=y
+else
+# Release
+ifeq ($(MALI_QUIET),1)
+export CONFIG_MALI_QUIET=y
+export EXTRA_DEFINES += -DCONFIG_MALI_QUIET
+endif
+endif
+
+ifeq ($(MALI_SKIP_JOBS),1)
+EXTRA_DEFINES += -DPROFILING_SKIP_PP_JOBS=1 -DPROFILING_SKIP_GP_JOBS=1
 endif
 
 all: $(UMP_SYMVERS_FILE)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2013 ARM Limited. All rights reserved.
+ * Copyright (C) 2010-2014 ARM Limited. All rights reserved.
  * 
  * This program is free software and is provided to you under the terms of the GNU General Public License version 2
  * as published by the Free Software Foundation, and any use by you of this program is subject to the terms of such GNU licence.
@@ -15,6 +15,7 @@
 
 #include "mali_linux_trace.h"
 #include "mali_profiling_events.h"
+#include "mali_profiling_gator_api.h"
 
 #define MALI_PROFILING_MAX_BUFFER_ENTRIES 1048576
 
@@ -43,7 +44,7 @@ void _mali_osk_profiling_term(void);
  * @param limit The desired maximum number of events to record on input, the actual maximum on output.
  * @return _MALI_OSK_ERR_OK on success, otherwise failure.
  */
-_mali_osk_errcode_t _mali_osk_profiling_start(u32 * limit);
+_mali_osk_errcode_t _mali_osk_profiling_start(u32 *limit);
 
 /**
  * Add an profiling event
@@ -82,7 +83,7 @@ void _mali_osk_profiling_report_sw_counters(u32 *counters);
  * @param count Returns the number of recorded events.
  * @return _MALI_OSK_ERR_OK on success, otherwise failure.
  */
-_mali_osk_errcode_t _mali_osk_profiling_stop(u32 * count);
+_mali_osk_errcode_t _mali_osk_profiling_stop(u32 *count);
 
 /**
  * Retrieves the number of events that can be retrieved
@@ -100,7 +101,7 @@ u32 _mali_osk_profiling_get_count(void);
  * @param data The 5 data values for the retrieved event will be stored here.
  * @return _MALI_OSK_ERR_OK on success, otherwise failure.
  */
-_mali_osk_errcode_t _mali_osk_profiling_get_event(u32 index, u64* timestamp, u32* event_id, u32 data[5]);
+_mali_osk_errcode_t _mali_osk_profiling_get_event(u32 index, u64 *timestamp, u32 *event_id, u32 data[5]);
 
 /**
  * Clear the recorded buffer.
@@ -129,7 +130,7 @@ mali_bool _mali_osk_profiling_have_recording(void);
 
 #else /* defined(CONFIG_MALI400_PROFILING)  && defined(CONFIG_TRACEPOINTS) */
 
- /* Dummy add_event, for when profiling is disabled. */
+/* Dummy add_event, for when profiling is disabled. */
 
 #define _mali_osk_profiling_add_event(event_id, data0, data1, data2, data3, data4)
 

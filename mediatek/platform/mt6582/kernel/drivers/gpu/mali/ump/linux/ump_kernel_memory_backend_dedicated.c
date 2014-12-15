@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011, 2013 ARM Limited. All rights reserved.
+ * Copyright (C) 2010-2011, 2013-2014 ARM Limited. All rights reserved.
  * 
  * This program is free software and is provided to you under the terms of the GNU General Public License version 2
  * as published by the Free Software Foundation, and any use by you of this program is subject to the terms of such GNU licence.
@@ -30,28 +30,26 @@
 
 
 
-typedef struct block_info
-{
-	struct block_info * next;
+typedef struct block_info {
+	struct block_info *next;
 } block_info;
 
 
 
-typedef struct block_allocator
-{
+typedef struct block_allocator {
 	struct semaphore mutex;
-	block_info * all_blocks;
-	block_info * first_free;
+	block_info *all_blocks;
+	block_info *first_free;
 	u32 base;
 	u32 num_blocks;
 	u32 num_free;
 } block_allocator;
 
 
-static void block_allocator_shutdown(ump_memory_backend * backend);
-static int block_allocator_allocate(void* ctx, ump_dd_mem * mem);
-static void block_allocator_release(void * ctx, ump_dd_mem * handle);
-static inline u32 get_phys(block_allocator * allocator, block_info * block);
+static void block_allocator_shutdown(ump_memory_backend *backend);
+static int block_allocator_allocate(void *ctx, ump_dd_mem *mem);
+static void block_allocator_release(void *ctx, ump_dd_mem *handle);
+static inline u32 get_phys(block_allocator *allocator, block_info *block);
 static u32 block_allocator_stat(struct ump_memory_backend *backend);
 
 
@@ -59,18 +57,17 @@ static u32 block_allocator_stat(struct ump_memory_backend *backend);
 /*
  * Create dedicated memory backend
  */
-ump_memory_backend * ump_block_allocator_create(u32 base_address, u32 size)
+ump_memory_backend *ump_block_allocator_create(u32 base_address, u32 size)
 {
-	ump_memory_backend * backend;
-	block_allocator * allocator;
+	ump_memory_backend *backend;
+	block_allocator *allocator;
 	u32 usable_size;
 	u32 num_blocks;
 
 	usable_size = (size + UMP_BLOCK_SIZE - 1) & ~(UMP_BLOCK_SIZE - 1);
 	num_blocks = usable_size / UMP_BLOCK_SIZE;
 
-	if (0 == usable_size)
-	{
+	if (0 == usable_size) {
 		DBG_MSG(1, ("Memory block of size %u is unusable\n", size));
 		return NULL;
 	}
@@ -79,14 +76,11 @@ ump_memory_backend * ump_block_allocator_create(u32 base_address, u32 size)
 	DBG_MSG(6, ("%u usable bytes which becomes %u blocks\n", usable_size, num_blocks));
 
 	backend = kzalloc(sizeof(ump_memory_backend), GFP_KERNEL);
-	if (NULL != backend)
-	{
+	if (NULL != backend) {
 		allocator = kmalloc(sizeof(block_allocator), GFP_KERNEL);
-		if (NULL != allocator)
-		{
-			allocator->all_blocks = kmalloc(sizeof(block_allocator) * num_blocks, GFP_KERNEL);
-			if (NULL != allocator->all_blocks)
-			{
+		if (NULL != allocator) {
+			allocator->all_blocks = kmalloc(sizeof(block_info) * num_blocks, GFP_KERNEL);
+			if (NULL != allocator->all_blocks) {
 				int i;
 
 				allocator->first_free = NULL;
@@ -95,8 +89,7 @@ ump_memory_backend * ump_block_allocator_create(u32 base_address, u32 size)
 				allocator->base = base_address;
 				sema_init(&allocator->mutex, 1);
 
-				for (i = 0; i < num_blocks; i++)
-				{
+				for (i = 0; i < num_blocks; i++) {
 					allocator->all_blocks[i].next = allocator->first_free;
 					allocator->first_free = &allocator->all_blocks[i];
 				}
@@ -124,14 +117,14 @@ ump_memory_backend * ump_block_allocator_create(u32 base_address, u32 size)
 /*
  * Destroy specified dedicated memory backend
  */
-static void block_allocator_shutdown(ump_memory_backend * backend)
+static void block_allocator_shutdown(ump_memory_backend *backend)
 {
-	block_allocator * allocator;
+	block_allocator *allocator;
 
 	BUG_ON(!backend);
 	BUG_ON(!backend->ctx);
 
-	allocator = (block_allocator*)backend->ctx;
+	allocator = (block_allocator *)backend->ctx;
 
 	DBG_MSG_IF(1, allocator->num_free != allocator->num_blocks, ("%u blocks still in use during shutdown\n", allocator->num_blocks - allocator->num_free));
 
@@ -142,41 +135,38 @@ static void block_allocator_shutdown(ump_memory_backend * backend)
 
 
 
-static int block_allocator_allocate(void* ctx, ump_dd_mem * mem)
+static int block_allocator_allocate(void *ctx, ump_dd_mem *mem)
 {
-	block_allocator * allocator;
+	block_allocator *allocator;
 	u32 left;
-	block_info * last_allocated = NULL;
+	block_info *last_allocated = NULL;
 	int i = 0;
 
 	BUG_ON(!ctx);
 	BUG_ON(!mem);
 
-	allocator = (block_allocator*)ctx;
+	allocator = (block_allocator *)ctx;
 	left = mem->size_bytes;
 
 	BUG_ON(!left);
 	BUG_ON(!&allocator->mutex);
 
 	mem->nr_blocks = ((left + UMP_BLOCK_SIZE - 1) & ~(UMP_BLOCK_SIZE - 1)) / UMP_BLOCK_SIZE;
-	mem->block_array = (ump_dd_physical_block*)vmalloc(sizeof(ump_dd_physical_block) * mem->nr_blocks);
-	if (NULL == mem->block_array)
-	{
+	mem->block_array = (ump_dd_physical_block *)vmalloc(sizeof(ump_dd_physical_block) * mem->nr_blocks);
+	if (NULL == mem->block_array) {
 		MSG_ERR(("Failed to allocate block array\n"));
 		return 0;
 	}
 
-	if (down_interruptible(&allocator->mutex))
-	{
+	if (down_interruptible(&allocator->mutex)) {
 		MSG_ERR(("Could not get mutex to do block_allocate\n"));
 		return 0;
 	}
 
 	mem->size_bytes = 0;
 
-	while ((left > 0) && (allocator->first_free))
-	{
-		block_info * block;
+	while ((left > 0) && (allocator->first_free)) {
+		block_info *block;
 
 		block = allocator->first_free;
 		allocator->first_free = allocator->first_free->next;
@@ -194,12 +184,10 @@ static int block_allocator_allocate(void* ctx, ump_dd_mem * mem)
 		else left -= UMP_BLOCK_SIZE;
 	}
 
-	if (left)
-	{
-		block_info * block;
+	if (left) {
+		block_info *block;
 		/* release all memory back to the pool */
-		while (last_allocated)
-		{
+		while (last_allocated) {
 			block = last_allocated->next;
 			last_allocated->next = allocator->first_free;
 			allocator->first_free = last_allocated;
@@ -220,36 +208,34 @@ static int block_allocator_allocate(void* ctx, ump_dd_mem * mem)
 	mem->backend_info = last_allocated;
 
 	up(&allocator->mutex);
-	mem->is_cached=0;
+	mem->is_cached = 0;
 
 	return 1;
 }
 
 
 
-static void block_allocator_release(void * ctx, ump_dd_mem * handle)
+static void block_allocator_release(void *ctx, ump_dd_mem *handle)
 {
-	block_allocator * allocator;
-	block_info * block, * next;
+	block_allocator *allocator;
+	block_info *block, * next;
 
 	BUG_ON(!ctx);
 	BUG_ON(!handle);
 
-	allocator = (block_allocator*)ctx;
-	block = (block_info*)handle->backend_info;
+	allocator = (block_allocator *)ctx;
+	block = (block_info *)handle->backend_info;
 	BUG_ON(!block);
 
-	if (down_interruptible(&allocator->mutex))
-	{
+	if (down_interruptible(&allocator->mutex)) {
 		MSG_ERR(("Allocator release: Failed to get mutex - memory leak\n"));
 		return;
 	}
 
-	while (block)
-	{
+	while (block) {
 		next = block->next;
 
-		BUG_ON( (block < allocator->all_blocks) || (block > (allocator->all_blocks + allocator->num_blocks)));
+		BUG_ON((block < allocator->all_blocks) || (block > (allocator->all_blocks + allocator->num_blocks)));
 
 		block->next = allocator->first_free;
 		allocator->first_free = block;
@@ -269,7 +255,7 @@ static void block_allocator_release(void * ctx, ump_dd_mem * handle)
 /*
  * Helper function for calculating the physical base adderss of a memory block
  */
-static inline u32 get_phys(block_allocator * allocator, block_info * block)
+static inline u32 get_phys(block_allocator *allocator, block_info *block)
 {
 	return allocator->base + ((block - allocator->all_blocks) * UMP_BLOCK_SIZE);
 }
@@ -278,8 +264,8 @@ static u32 block_allocator_stat(struct ump_memory_backend *backend)
 {
 	block_allocator *allocator;
 	BUG_ON(!backend);
-	allocator = (block_allocator*)backend->ctx;
+	allocator = (block_allocator *)backend->ctx;
 	BUG_ON(!allocator);
 
-	return (allocator->num_blocks - allocator->num_free)* UMP_BLOCK_SIZE;
+	return (allocator->num_blocks - allocator->num_free) * UMP_BLOCK_SIZE;
 }
